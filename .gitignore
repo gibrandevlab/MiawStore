@@ -1,0 +1,26 @@
+# Root .gitignore for Miaw project
+
+# Node backend
+/backend/node_modules/
+/backend/.env
+/backend/*.log
+/backend/.sqlite
+
+# Flutter frontend
+/frontend/.dart_tool/
+/frontend/.packages
+/frontend/.flutter-plugins
+/frontend/.flutter-plugins-dependencies
+/frontend/build/
+/frontend/.idea/
+/frontend/.gradle/
+/frontend/local.properties
+/frontend/android/local.properties
+/frontend/ios/Pods/
+/frontend/.vscode/
+
+# misc
+*.log
+.DS_Store
+.vscode/
+.idea/

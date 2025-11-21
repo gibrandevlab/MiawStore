@@ -1,0 +1,44 @@
+name: miaw_frontend
+description: Frontend Flutter untuk Miaw (Android)
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP client (choose one; using dio here)
+  dio: ^5.2.0
+
+  # State management
+  provider: ^6.0.5
+
+  # Secure storage for JWT
+  flutter_secure_storage: ^8.0.0
+  # SVG rendering
+  flutter_svg: ^1.1.1
+  # JWT decoder
+  jwt_decoder: ^2.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.10.0
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/cat.svg
+    - assets/icons/icon-apps.png
+
+# Configuration for generating launcher icons. Using provided PNG at
+# `assets/icons/icon-apps.png`. Run generator after `flutter pub get`:
+#   flutter pub run flutter_launcher_icons:main
+flutter_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/icon-apps.png"

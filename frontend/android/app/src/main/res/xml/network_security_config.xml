@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <!--
+    Network security config that permits cleartext (HTTP) traffic only to
+    specific IP addresses / domains used in development.
+
+    Update the <domain> entry below with your machine IP on the LAN, e.g.
+    <domain includeSubdomains="false">192.168.1.10</domain>
+
+    NOTE: Some Android versions treat IP addresses differently; if you have
+    trouble, you can temporarily set android:usesCleartextTraffic="true"
+    in the <application> (less secure, only for short-term development).
+  -->
+
+  <!-- Block cleartext by default -->
+  <base-config cleartextTrafficPermitted="false" />
+
+  <!-- Allow cleartext for the development machine's IP only -->
+  <domain-config cleartextTrafficPermitted="true">
+    <!-- Local machine IP from ipconfig: 192.168.1.71 -->
+    <domain includeSubdomains="false">192.168.1.71</domain>
+  </domain-config>
+</network-security-config>

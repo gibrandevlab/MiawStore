@@ -1,0 +1,12 @@
+# Backend (Node/Express/Sequelize)
+node_modules/
+.env
+npm-debug.log*
+logs/
+*.sqlite
+coverage/
+**/dist/
+**/build/
+
+# sequelize-cli generated files
+config/config.json
