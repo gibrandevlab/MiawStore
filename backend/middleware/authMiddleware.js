@@ -32,3 +32,21 @@ exports.isAuthenticated = (req, res, next) => {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
+
+// Allow access to admin or kasir roles
+exports.isStaff = (req, res, next) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return res.status(401).json({ message: 'Authorization token required' });
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (payload.role && (payload.role === 'admin' || payload.role === 'kasir')) {
+      req.user = payload;
+      return next();
+    }
+    return res.status(403).json({ message: 'Forbidden: staff access required' });
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};

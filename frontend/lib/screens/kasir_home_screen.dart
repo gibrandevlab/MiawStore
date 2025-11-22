@@ -5,7 +5,15 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
+import '../providers/cart_provider.dart';
+import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/kasir_service.dart';
 import 'login_screen.dart';
 
 class KasirHomeScreen extends StatefulWidget {
@@ -18,15 +26,27 @@ class KasirHomeScreen extends StatefulWidget {
 class _KasirHomeScreenState extends State<KasirHomeScreen> {
   final _api = ApiService().dio;
   final _storage = const FlutterSecureStorage();
-  List<dynamic> _products = [];
-  bool _loading = true;
+  final KasirService _kasir = KasirService();
+
+  int _currentIndex = 0;
   String _username = 'Kasir';
+
+  // data for tabs
+  List<dynamic> _lowStock = [];
+  List<dynamic> _products = [];
+  List<dynamic> _stocks = [];
+
+  bool _loadingDashboard = true;
+  bool _loadingProducts = true;
+  bool _loadingStocks = true;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _fetchDashboard();
     _fetchProducts();
+    _fetchStocks();
   }
 
   Future<void> _loadUser() async {
@@ -41,20 +61,35 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
     } catch (_) {}
   }
 
+  // Tab 1: dashboard (low stock alerts)
+  Future<void> _fetchDashboard() async {
+    if (mounted) setState(() => _loadingDashboard = true);
+    try {
+      final list = await _kasir.getDashboard();
+      if (!mounted) return;
+      setState(() => _lowStock = list);
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading dashboard: $e')));
+    } finally {
+      if (mounted) setState(() => _loadingDashboard = false);
+    }
+  }
+
+  // Tab 2: products (POS)
   Future<void> _fetchProducts() async {
-    setState(() => _loading = true);
+    if (mounted) setState(() => _loadingProducts = true);
     try {
       final resp = await _api.get('/api/products');
       if (!mounted) return;
-      setState(() {
-        _products = resp.data as List<dynamic>;
-      });
+      setState(() => _products = resp.data as List<dynamic>);
     } catch (e) {
       if (mounted)
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Gagal memuat produk: $e')));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _loadingProducts = false);
     }
   }
 
@@ -76,9 +111,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
           context: ctx,
           barrierDismissible: false,
           builder: (_) => const Center(child: CircularProgressIndicator()));
-
       final resp = await _api.post('/api/transaction', data: {'items': items});
-      Navigator.of(ctx).pop(); // close progress
+      Navigator.of(ctx).pop();
 
       if ((resp.data != null && resp.data['success'] == true) ||
           resp.statusCode == 200) {
@@ -86,7 +120,6 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
         ScaffoldMessenger.of(ctx)
             .showSnackBar(const SnackBar(content: Text('Pembayaran sukses')));
         await _fetchProducts();
-        Navigator.of(ctx).pop(); // close checkout modal
       } else {
         final msg = resp.data != null && resp.data['message'] != null
             ? resp.data['message']
@@ -143,11 +176,15 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
                                       IconButton(
                                           icon: const Icon(Icons.remove),
                                           onPressed: () =>
-                                              cart.decreaseQty(pid)),
+                                              Provider.of<CartProvider>(ctx,
+                                                      listen: false)
+                                                  .decreaseQty(pid)),
                                       IconButton(
                                           icon: const Icon(Icons.add),
                                           onPressed: () =>
-                                              cart.increaseQty(pid)),
+                                              Provider.of<CartProvider>(ctx,
+                                                      listen: false)
+                                                  .increaseQty(pid)),
                                     ]),
                               );
                             },
@@ -164,9 +201,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold))),
                         ElevatedButton(
-                          onPressed: () => _checkout(ctx),
-                          child: const Text('BAYAR'),
-                        )
+                            onPressed: () => _checkout(ctx),
+                            child: const Text('BAYAR'))
                       ],
                     ),
                   )
@@ -177,79 +213,220 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
         });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Kasir — $_username'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await AuthService().logout();
-              if (!mounted) return;
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()));
-            },
-          )
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 3 / 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8),
-                itemCount: _products.length,
-                itemBuilder: (ctx, i) {
-                  final p = _products[i] as Map<String, dynamic>;
+  // Tab 3: stocks
+  Future<void> _fetchStocks() async {
+    if (mounted) setState(() => _loadingStocks = true);
+    try {
+      final list = await _kasir.getStocks();
+      if (!mounted) return;
+      setState(() => _stocks = list);
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error loading stocks: $e')));
+    } finally {
+      if (mounted) setState(() => _loadingStocks = false);
+    }
+  }
+
+  Future<void> _showUpdateStockDialog(Map<String, dynamic> stock) async {
+    final currentQty = (stock['quantity'] ?? 0).toString();
+    final controller = TextEditingController(text: currentQty);
+    final product = stock['product'] ?? {};
+
+    final res = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Update Stok Fisik'),
+            content: TextFormField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration:
+                  const InputDecoration(labelText: 'Jumlah stok ( angka )'),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Batal')),
+              ElevatedButton(
+                  onPressed: () async {
+                    final newQty = int.tryParse(controller.text) ?? 0;
+                    try {
+                      await _kasir.updateStock(
+                          product['id'] ??
+                              stock['productId'] ??
+                              stock['productId'],
+                          newQty);
+                      Navigator.of(ctx).pop(true);
+                    } catch (e) {
+                      ScaffoldMessenger.of(ctx)
+                          .showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  },
+                  child: const Text('Simpan'))
+            ],
+          );
+        });
+
+    if (res == true) await _fetchStocks();
+  }
+
+  Widget _buildDashboardTab() {
+    if (_loadingDashboard)
+      return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(
+      onRefresh: _fetchDashboard,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Halo, $_username',
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          const Text('Peringatan Stok Menipis',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          _lowStock.isEmpty
+              ? Center(
+                  child: Column(children: const [
+                  Icon(Icons.check_circle, color: Colors.green, size: 48),
+                  SizedBox(height: 8),
+                  Text('Stok Aman')
+                ]))
+              : Column(
+                  children: _lowStock.map((s) {
+                  final p = s['product'] ?? {};
                   return Card(
-                    child: InkWell(
-                      onTap: () {
-                        Provider.of<CartProvider>(context, listen: false)
-                            .addToCart(p);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text('${p['name']} ditambahkan')));
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(p['name'] ?? '',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 6),
-                            Text(
-                                'Rp ${((p['price'] ?? 0) as num).toStringAsFixed(2)}'),
-                            const Spacer(),
-                            Text('Stok: ${p['stock'] ?? 0}'),
-                          ],
-                        ),
-                      ),
+                    color: Colors.pink[50],
+                    child: ListTile(
+                      title: Text(p['name'] ?? 'Produk'),
+                      subtitle: Text('Sisa: ${s['quantity'] ?? 0}'),
                     ),
                   );
-                },
+                }).toList())
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildTransactionsTab() {
+    if (_loadingProducts)
+      return const Center(child: CircularProgressIndicator());
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 3 / 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8),
+        itemCount: _products.length,
+        itemBuilder: (ctx, i) {
+          final p = _products[i] as Map<String, dynamic>;
+          return Card(
+            child: InkWell(
+              onTap: () {
+                Provider.of<CartProvider>(context, listen: false).addToCart(p);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${p['name']} ditambahkan')));
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p['name'] ?? '',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Text(
+                          'Rp ${((p['price'] ?? 0) as num).toStringAsFixed(2)}'),
+                      const Spacer(),
+                      Text('Stok: ${p['stock'] ?? 0}'),
+                    ]),
               ),
             ),
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-                child: Text(
-                    'Total: Rp ${Provider.of<CartProvider>(context).totalAmount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold))),
-            ElevatedButton(
-                onPressed: _openCheckout, child: const Text('Checkout'))
-          ],
-        ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStocksTab() {
+    if (_loadingStocks) return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(
+      onRefresh: _fetchStocks,
+      child: ListView.builder(
+        itemCount: _stocks.length,
+        itemBuilder: (ctx, i) {
+          final s = _stocks[i] as Map<String, dynamic>;
+          final p = s['product'] ?? {};
+          final qty = s['quantity'] ?? 0;
+          return ListTile(
+            leading: const Icon(Icons.inventory_2),
+            title: Text(p['name'] ?? 'Produk'),
+            trailing: Text('$qty',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: qty <= 5 ? Colors.red : Colors.black)),
+            onTap: () => _showUpdateStockDialog(s),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Kasir'),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await AuthService().logout();
+                if (!mounted) return;
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()));
+              })
+        ],
+      ),
+      body: IndexedStack(index: _currentIndex, children: [
+        _buildDashboardTab(),
+        Stack(children: [
+          _buildTransactionsTab(),
+          Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(8),
+                  child: Row(children: [
+                    Expanded(
+                        child: Text(
+                            'Total: Rp ${cart.totalAmount.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold))),
+                    ElevatedButton(
+                        onPressed: _openCheckout, child: const Text('Checkout'))
+                  ])))
+        ]),
+        _buildStocksTab(),
+      ]),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.point_of_sale), label: 'Transaksi'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.inventory), label: 'Kelola Stok'),
+        ],
       ),
     );
   }

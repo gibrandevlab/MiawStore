@@ -7,6 +7,7 @@ const authRouter = require('./routes/auth');
 const adminRouter = require('./routes/admin');
 const transactionRouter = require('./routes/transaction');
 const productsRouter = require('./routes/products');
+const kasirRouter = require('./routes/kasir');
 
 app.use(express.json());
 
@@ -18,6 +19,8 @@ app.use('/api/admin', adminRouter);
 app.use('/api/products', productsRouter);
 // Transaction endpoint for creating sells (POS)
 app.use('/api/transaction', transactionRouter);
+// Kasir (POS) routes (staff: admin or kasir)
+app.use('/api/kasir', kasirRouter);
 
 async function start() {
   try {
