@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/admin_service.dart';
 
-// --- PALET WARNA (Konsisten) ---
 const Color kColorDarkBrown = Color(0xFF9D5C0D);
 const Color kColorVibrantOrange = Color(0xFFE5890A);
 const Color kColorSoftYellow = Color(0xFFF7D08A);
@@ -62,11 +61,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kColorWhiteCream,
-      // Kita hilangkan AppBar bawaan di sini jika parent (AdminHome) sudah punya, 
-      // atau kita biarkan kosong body-nya saja karena AdminHome biasanya handle AppBar.
-      // Tapi jika ini halaman mandiri, berikut body-nya:
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: kColorVibrantOrange))
+          ? const Center(
+              child: CircularProgressIndicator(color: kColorVibrantOrange))
           : RefreshIndicator(
               color: kColorVibrantOrange,
               onRefresh: _load,
@@ -76,7 +73,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. Header Sapaan
                     const Text(
                       "Overview Toko",
                       style: TextStyle(
@@ -92,10 +88,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
-                    
                     const SizedBox(height: 24),
-
-                    // 2. Kartu Omzet (Revenue)
                     Row(
                       children: [
                         Expanded(
@@ -104,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             amount: revenueToday,
                             icon: Icons.today_rounded,
                             color: kColorVibrantOrange,
-                            isHighlight: true, // Lebih menonjol
+                            isHighlight: true,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -119,22 +112,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 32),
-
-                    // 3. Section Low Stock
-                    _buildSectionHeader("Stok Menipis", Icons.warning_amber_rounded, kColorRedAlert),
+                    _buildSectionHeader("Stok Menipis",
+                        Icons.warning_amber_rounded, kColorRedAlert),
                     const SizedBox(height: 16),
                     _buildLowStockList(),
-
                     const SizedBox(height: 32),
-
-                    // 4. Section Top Products
-                    _buildSectionHeader("Produk Terlaris", Icons.emoji_events_rounded, kColorDarkBrown),
+                    _buildSectionHeader("Produk Terlaris",
+                        Icons.emoji_events_rounded, kColorDarkBrown),
                     const SizedBox(height: 16),
                     _buildTopProductsList(),
-                    
-                    const SizedBox(height: 40), // Bottom padding
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -142,9 +130,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // --- WIDGET BUILDERS (Agar kode rapi) ---
-
-  // 1. Header Judul Per-Section
   Widget _buildSectionHeader(String title, IconData icon, Color color) {
     return Row(
       children: [
@@ -162,7 +147,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 2. Kartu Statistik (Omzet)
   Widget _buildStatCard({
     required String title,
     required double amount,
@@ -177,9 +161,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isHighlight 
-              ? kColorVibrantOrange.withValues(alpha: 0.3) 
-              : Colors.grey.withValues(alpha: 0.1),
+            color: isHighlight
+                ? kColorVibrantOrange.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -191,10 +175,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isHighlight ? Colors.white.withValues(alpha: 0.2) : color.withValues(alpha: 0.1),
+              color: isHighlight
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: isHighlight ? Colors.white : color, size: 24),
+            child:
+                Icon(icon, color: isHighlight ? Colors.white : color, size: 24),
           ),
           const SizedBox(height: 16),
           Text(
@@ -202,14 +189,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: isHighlight ? Colors.white.withValues(alpha: 0.9) : Colors.grey[600],
+              color: isHighlight
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 4),
           Text(
             "Rp ${_formatCurrency(amount)}",
             style: TextStyle(
-              fontSize: 18, // Ukuran font dinamis bisa diatur
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: isHighlight ? Colors.white : kColorDarkBrown,
             ),
@@ -219,7 +208,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 3. List Stok Menipis (Horizontal Scroll)
   Widget _buildLowStockList() {
     if (lowStock.isEmpty) {
       return Container(
@@ -234,21 +222,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             const Icon(Icons.check_circle, color: kColorGreenSuccess),
             const SizedBox(width: 12),
-            const Text("Aman! Semua stok mencukupi.", style: TextStyle(color: kColorGreenSuccess, fontWeight: FontWeight.bold)),
+            const Text("Aman! Semua stok mencukupi.",
+                style: TextStyle(
+                    color: kColorGreenSuccess, fontWeight: FontWeight.bold)),
           ],
         ),
       );
     }
 
     return SizedBox(
-      height: 110, // Tinggi area scroll
+      height: 110,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: lowStock.length,
         itemBuilder: (ctx, i) {
           final item = lowStock[i];
           return Container(
-            width: 240, // Lebar per kartu
+            width: 240,
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -271,7 +261,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: kColorRedAlert.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.priority_high_rounded, color: kColorRedAlert),
+                  child: const Icon(Icons.priority_high_rounded,
+                      color: kColorRedAlert),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -281,14 +272,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Text(
                         item['name'] ?? 'Produk',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "Sisa: ${item['quantity']}",
-                        style: const TextStyle(color: kColorRedAlert, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            color: kColorRedAlert, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -301,12 +294,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 4. List Top Products (Vertical List Style)
   Widget _buildTopProductsList() {
     if (topProducts.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
-        child: Text("Belum ada data penjualan.", style: TextStyle(color: Colors.grey)),
+        child: Text("Belum ada data penjualan.",
+            style: TextStyle(color: Colors.grey)),
       );
     }
 
@@ -315,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-           BoxShadow(
+          BoxShadow(
             color: kColorDarkBrown.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 5),
@@ -328,18 +321,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final item = entry.value;
           final name = item['name'] ?? 'Produk';
           final sold = item['totalSold'] ?? item['total_sold'] ?? 0;
-          
-          // Warna medali untuk Top 3
+
           Color badgeColor;
-          if (idx == 0) badgeColor = const Color(0xFFFFD700); // Gold
-          else if (idx == 1) badgeColor = const Color(0xFFC0C0C0); // Silver
-          else if (idx == 2) badgeColor = const Color(0xFFCD7F32); // Bronze
-          else badgeColor = Colors.grey[300]!;
+          if (idx == 0)
+            badgeColor = const Color(0xFFFFD700);
+          else if (idx == 1)
+            badgeColor = const Color(0xFFC0C0C0);
+          else if (idx == 2)
+            badgeColor = const Color(0xFFCD7F32);
+          else
+            badgeColor = Colors.grey[300]!;
 
           return Column(
             children: [
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 leading: Container(
                   width: 36,
                   height: 36,
@@ -358,22 +355,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 title: Text(
                   name,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: kColorSoftYellow.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '$sold terjual',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kColorDarkBrown),
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: kColorDarkBrown),
                   ),
                 ),
               ),
-              if (idx != topProducts.length - 1) 
-                Divider(height: 1, color: Colors.grey.withValues(alpha: 0.1), indent: 70),
+              if (idx != topProducts.length - 1)
+                Divider(
+                    height: 1,
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    indent: 70),
             ],
           );
         }).toList(),
@@ -381,16 +386,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Helper format angka sederhana (Contoh: 1500000 -> 1.5M atau sejenisnya, tapi di sini kita simple fixed)
   String _formatCurrency(double value) {
-    // Jika mau format cantik (1.5jt, 200rb) bisa ditambah logic di sini
-    // Untuk sekarang kita pakai pembulatan sederhana biar tidak kepanjangan
     if (value >= 1000000) {
       double val = value / 1000000;
-      return "${val.toStringAsFixed(1)} Jt"; // Contoh: 1.5 Jt
+      return "${val.toStringAsFixed(1)} Jt";
     } else if (value >= 1000) {
-       double val = value / 1000;
-       return "${val.toStringAsFixed(0)} Rb"; // Contoh: 500 Rb
+      double val = value / 1000;
+      return "${val.toStringAsFixed(0)} Rb";
     }
     return value.toStringAsFixed(0);
   }

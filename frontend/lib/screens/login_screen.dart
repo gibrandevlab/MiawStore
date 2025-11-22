@@ -7,11 +7,10 @@ import '../services/auth_service.dart';
 import 'admin_home_screen.dart';
 import 'kasir_home_screen.dart';
 
-// --- DEFINISI WARNA DARI PALET ---
-const Color kColorDarkBrown = Color(0xFF9D5C0D); // Teks Utama & Ikon
-const Color kColorVibrantOrange = Color(0xFFE5890A); // Header & Tombol
-const Color kColorSoftYellow = Color(0xFFF7D08A); // Aksen Background
-const Color kColorWhiteCream = Color(0xFFFAFAFA); // Background Utama
+const Color kColorDarkBrown = Color(0xFF9D5C0D);
+const Color kColorVibrantOrange = Color(0xFFE5890A);
+const Color kColorSoftYellow = Color(0xFFF7D08A);
+const Color kColorWhiteCream = Color(0xFFFAFAFA);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _loading = false;
-  bool _isObscure = true; // State untuk menyembunyikan/menampilkan password
+  bool _isObscure = true;
 
   @override
   void dispose() {
@@ -49,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      // Decode JWT untuk mengetahui role dan username
       String role = 'kasir';
       String username = '';
       try {
@@ -58,14 +56,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (payload['username'] != null) username = payload['username'];
       } catch (_) {}
 
-      // Simpan token
       const storage = FlutterSecureStorage();
       await storage.write(key: 'jwt', value: token);
 
       if (!mounted) return;
       setState(() => _loading = false);
 
-      // Tampilkan pesan sukses
       if (username.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -76,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
 
-      // Navigasi berdasarkan role
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
@@ -121,16 +116,13 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: kColorWhiteCream,
       body: Stack(
         children: [
-          // 1. BACKGROUND WAVES (Header Bergelombang)
-          // Wave Belakang (Kuning Soft)
           ClipPath(
             clipper: WaveClipper(),
             child: Container(
               height: 280,
-              color: kColorSoftYellow.withOpacity(0.6),
+              color: kColorSoftYellow.withValues(alpha: 0.6),
             ),
           ),
-          // Wave Depan (Orange Utama)
           ClipPath(
             clipper: WaveClipperReverse(),
             child: Container(
@@ -144,8 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
-          // 2. CONTENT UTAMA
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -154,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Judul di atas Card
                     const Text(
                       "Welcome Back!",
                       style: TextStyle(
@@ -171,8 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-
-                    // CARD LOGIN (Melayang)
                     Container(
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
@@ -180,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: kColorDarkBrown.withOpacity(0.1),
+                            color: kColorDarkBrown.withValues(alpha: 0.1),
                             blurRadius: 25,
                             offset: const Offset(0, 10),
                           ),
@@ -188,7 +175,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Column(
                         children: [
-                          // ICON/GAMBAR
                           Container(
                             width: 90,
                             height: 90,
@@ -214,13 +200,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 30),
-
-                          // FORM INPUT
                           Form(
                             key: _formKey,
                             child: Column(
                               children: [
-                                // --- EMAIL FIELD ---
                                 TextFormField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
@@ -228,13 +211,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       "Email", Icons.email_outlined),
                                   validator: _validateEmail,
                                 ),
-
                                 const SizedBox(height: 20),
-
-                                // --- PASSWORD FIELD (Dengan Fitur Mata) ---
                                 TextFormField(
                                   controller: _passwordController,
-                                  obscureText: _isObscure, // Logic hidden
+                                  obscureText: _isObscure,
                                   decoration: _inputDecoration(
                                           "Password", Icons.lock_outline)
                                       .copyWith(
@@ -248,16 +228,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                         _isObscure
                                             ? Icons.visibility_outlined
                                             : Icons.visibility_off_outlined,
-                                        color: kColorDarkBrown.withOpacity(0.5),
+                                        color: kColorDarkBrown.withValues(
+                                            alpha: 0.5),
                                       ),
                                     ),
                                   ),
                                   validator: _validatePassword,
                                 ),
-
                                 const SizedBox(height: 30),
-
-                                // --- TOMBOL LOGIN ---
                                 SizedBox(
                                   width: double.infinity,
                                   height: 54,
@@ -266,8 +244,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       backgroundColor: kColorVibrantOrange,
                                       foregroundColor: Colors.white,
                                       elevation: 5,
-                                      shadowColor:
-                                          kColorVibrantOrange.withOpacity(0.4),
+                                      shadowColor: kColorVibrantOrange
+                                          .withValues(alpha: 0.4),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                       ),
@@ -298,13 +276,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                     ),
-
-                    // Footer Text
                     const SizedBox(height: 24),
                     Text(
                       "Lupa password? Hubungi Admin",
                       style: TextStyle(
-                        color: kColorDarkBrown.withOpacity(0.7),
+                        color: kColorDarkBrown.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -318,7 +294,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- HELPER: DEKORASI INPUT AGAR RAPI & KONSISTEN ---
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -327,17 +302,14 @@ class _LoginScreenState extends State<LoginScreen> {
       filled: true,
       fillColor: kColorWhiteCream,
       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-      // Border saat normal
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none, // Polos agar bersih
+        borderSide: BorderSide.none,
       ),
-      // Border saat diklik (Focus)
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: kColorVibrantOrange, width: 1.5),
       ),
-      // Border saat error
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Colors.redAccent),
@@ -350,9 +322,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// --- CUSTOM PAINTERS (UNTUK BENTUK GELOMBANG) ---
-
-// Gelombang Belakang
 class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

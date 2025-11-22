@@ -10,7 +10,6 @@ import 'manage_products_screen.dart';
 import 'manage_stock_screen.dart';
 import 'manage_sells_screen.dart';
 
-// --- DEFINISI WARNA (Konsisten dengan Login) ---
 const Color kColorDarkBrown = Color(0xFF9D5C0D);
 const Color kColorVibrantOrange = Color(0xFFE5890A);
 const Color kColorSoftYellow = Color(0xFFF7D08A);
@@ -37,7 +36,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     const ManageSellsScreen(),
   ];
 
-  // Judul halaman dinamis sesuai menu yang dipilih
   final List<String> _titles = [
     'Dashboard',
     'Kelola Users',
@@ -58,6 +56,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     if (token != null) {
       try {
         final Map<String, dynamic> payload = JwtDecoder.decode(token);
+        if (!mounted) return;
         setState(() {
           _username = payload['username'] ?? 'Admin';
           _email = payload['email'] ?? '';
@@ -68,7 +67,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _logout() async {
-    // Tampilkan dialog konfirmasi biar lebih UX friendly
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -102,7 +100,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kColorWhiteCream, // Background bersih
+      backgroundColor: kColorWhiteCream,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kColorVibrantOrange,
@@ -126,7 +124,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ],
       ),
       drawer: _buildCustomDrawer(),
-      // Body dibungkus Container agar bisa dikasih pattern/background halus jika mau
       body: Container(
         color: kColorWhiteCream,
         child: _pages[_selected],
@@ -134,18 +131,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  // --- CUSTOM DRAWER (Agar tidak membosankan) ---
   Widget _buildCustomDrawer() {
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          // 1. Header Drawer dengan Lengkungan
           SizedBox(
             height: 230,
             child: Stack(
               children: [
-                // Background Gradient & Curve
                 ClipPath(
                   clipper: DrawerHeaderClipper(),
                   child: Container(
@@ -159,7 +153,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                 ),
-                // Konten Profil
                 Positioned(
                   top: 60,
                   left: 20,
@@ -170,7 +163,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
                         child: const CircleAvatar(
                           radius: 35,
@@ -201,8 +194,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ],
             ),
           ),
-
-          // 2. Menu List Items
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -212,19 +203,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 _buildMenuItem(2, "Kelola Produk", Icons.shopping_bag_rounded),
                 _buildMenuItem(3, "Kelola Stok", Icons.inventory_2_rounded),
                 _buildMenuItem(4, "Laporan Jual", Icons.insert_chart_rounded),
-
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
                   child: Divider(),
                 ),
-
-                // Menu Logout
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.logout_rounded, color: Colors.red),
@@ -242,8 +230,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ],
             ),
           ),
-
-          // Footer Version (Opsional)
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
@@ -256,16 +242,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  // Helper untuk membuat Item Menu yang cantik
   Widget _buildMenuItem(int index, String title, IconData icon) {
     final bool isSelected = _selected == index;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        // Jika dipilih, warnanya kuning lembut, jika tidak transparan
-        color:
-            isSelected ? kColorSoftYellow.withOpacity(0.4) : Colors.transparent,
+        color: isSelected
+            ? kColorSoftYellow.withValues(alpha: 0.4)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -276,18 +261,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         },
         leading: Icon(
           icon,
-          // Jika dipilih warna icon coklat tua, jika tidak abu-abu
           color: isSelected ? kColorDarkBrown : Colors.grey[600],
         ),
         title: Text(
           title,
           style: TextStyle(
-            // Jika dipilih font tebal dan warna coklat
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             color: isSelected ? kColorDarkBrown : Colors.grey[800],
           ),
         ),
-        // Tanda panah kecil di kanan jika dipilih
         trailing: isSelected
             ? const Icon(Icons.arrow_forward_ios_rounded,
                 size: 14, color: kColorDarkBrown)
@@ -297,22 +279,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 }
 
-// --- CLIPPER UNTUK HEADER DRAWER (Bentuk Gelombang Halus) ---
 class DrawerHeaderClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-    path.lineTo(0, size.height - 40); // Mulai dari kiri bawah (naik dikit)
+    path.lineTo(0, size.height - 40);
 
-    // Buat lengkungan ke bawah
-    path.quadraticBezierTo(
-        size.width / 2,
-        size.height, // Titik kontrol (tengah bawah)
-        size.width,
+    path.quadraticBezierTo(size.width / 2, size.height, size.width,
         size.height - 40 // Titik akhir (kanan bawah naik dikit)
         );
 
-    path.lineTo(size.width, 0); // Ke pojok kanan atas
+    path.lineTo(size.width, 0);
     path.close();
     return path;
   }

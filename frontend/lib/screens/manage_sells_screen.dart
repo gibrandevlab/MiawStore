@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/admin_service.dart';
 
-// --- PALET WARNA ---
 const Color kColorDarkBrown = Color(0xFF9D5C0D);
 const Color kColorVibrantOrange = Color(0xFFE5890A);
 const Color kColorSoftYellow = Color(0xFFF7D08A);
 const Color kColorWhiteCream = Color(0xFFFAFAFA);
-const Color kColorSuccessGreen = Color(0xFF2E7D32); 
+const Color kColorSuccessGreen = Color(0xFF2E7D32);
 
 class ManageSellsScreen extends StatefulWidget {
   const ManageSellsScreen({super.key});
@@ -60,7 +59,6 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
       backgroundColor: kColorWhiteCream,
       body: Stack(
         children: [
-          // 1. Dekorasi Background
           Positioned(
             bottom: -50,
             left: -50,
@@ -73,12 +71,9 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
               ),
             ),
           ),
-
-          // 2. Content List
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Title
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
                 child: Text(
@@ -90,8 +85,6 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
                   ),
                 ),
               ),
-
-              // List Data
               Expanded(
                 child: _loading
                     ? const Center(
@@ -120,7 +113,6 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
     );
   }
 
-  // --- WIDGET KARTU TRANSAKSI ---
   Widget _buildTransactionCard(Map<String, dynamic> item) {
     final product = item['product'] ?? {};
     final productName = product['name'] ?? 'Produk Dihapus';
@@ -145,7 +137,6 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 1. Icon Penjualan (Struk)
           Container(
             width: 50,
             height: 50,
@@ -159,15 +150,11 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
               size: 26,
             ),
           ),
-
           const SizedBox(width: 16),
-
-          // 2. Info Produk & Qty & User
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nama Produk
                 Text(
                   productName,
                   style: const TextStyle(
@@ -178,50 +165,44 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
                 const SizedBox(height: 6),
-                
-                // --- BAGIAN BARU: USERNAME BADGE (ESTETIK & ANTI OVERFLOW) ---
                 Builder(builder: (_) {
                   final cashier = item['cashier'] ?? {};
                   final cashierName =
                       cashier['username'] ?? cashier['email'] ?? null;
-                  
+
                   if (cashierName == null) return const SizedBox.shrink();
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100], // Background abu lembut
-                      borderRadius: BorderRadius.circular(20), // Kapsul
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Agar lebar menyesuaikan isi
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.person_outline, size: 14, color: Colors.grey[600]),
+                        Icon(Icons.person_outline,
+                            size: 14, color: Colors.grey[600]),
                         const SizedBox(width: 4),
-                        // Flexible + Ellipsis: Solusi nama kepanjangan
                         Flexible(
                           child: Text(
                             cashierName,
-                            maxLines: 1, // Paksa 1 baris
-                            overflow: TextOverflow.ellipsis, // Potong jadi "..."
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11, 
-                              color: Colors.grey[700],
-                              fontWeight: FontWeight.w500
-                            ),
+                                fontSize: 11,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
                     ),
                   );
                 }),
-                // -----------------------------------------------------------
-
-                // Label Qty
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -241,8 +222,6 @@ class _ManageSellsScreenState extends State<ManageSellsScreen> {
               ],
             ),
           ),
-
-          // 3. Total Harga & Tanggal
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
